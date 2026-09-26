@@ -389,6 +389,32 @@ export const GAMES = deepFreeze({
     jitter: { tight: { x: 0.15, y: 0.15, yaw: 0.10 }, wide: { x: 1.0, y: 1.2, yaw: Math.PI } },
 
     /**
+     * The opening the SHIPPED symmetric match draws each episode: one pose in
+     * A's own half, and B's is that pose turned pi about the field centre.
+     *
+     * A fixed opening makes every round the same round, and it is also the one
+     * opening no evaluation used — the pool resets randomly. Drawing instead
+     * gives a different run-up, a different lateral offset and a different
+     * heading every time, so the player cannot memorise a single line.
+     *
+     * The draw stays CENTRALLY SYMMETRIC because the scenario is: both seats
+     * face a mirrored problem, and an independent per-seat jitter (which is
+     * what training uses) would hand one of them a shorter run. Under the pi
+     * map (x, y, yaw) -> (-x, -y, yaw + pi) the two openings are the same
+     * opening seen from the other seat, which is the only way the match is fair
+     * at every draw rather than on average.
+     *
+     * `xAbs` is the distance from the centre line, so A draws at -xAbs and B at
+     * +xAbs. The band sits between the training nominal (1.4) and the locked
+     * demo opening (2.14), and stays clear of the 2.8 wall; `y` and `yaw` are
+     * half-widths. `y` runs nearly the full half-width of the pitch (the wall
+     * is at 1.5, the body's own half-width is 0.15) so the two can open on
+     * opposite touchlines, 2.2 m apart across the field, and the approach is a
+     * different one every round.
+     */
+    spawnRandom: { xAbs: [1.2, 2.3], y: 1.1, yaw: 0.25 },
+
+    /**
      * The human's speed limit IN THIS GAME ONLY (app/input.js setLimits).
      *
      * Both dogs run for a line here, so the match is a race and whoever is
@@ -971,10 +997,21 @@ export function episodeSeconds(game) {
 /**
  * The spawn spec to hand `sim.resetAll(...)`, keyed by physics.js robot id and
  * carrying the z and joint pose the training reset uses.
- * `variant`: 'default' (the game's opening) | 'training' (the nominal spawn).
+ *
+ * `variant`:
+ *   'default'  the game's fixed opening (asym: the training nominal; sym: the
+ *              locked demo opening) — repeatable, which is what the harnesses
+ *              and the screenshot tests need.
+ *   'training' the nominal spawn.
+ *   'random'   one draw from `spawnRandom`, mirrored through the field centre.
+ *              Symmetric games only; anything else falls back to 'default'.
+ *
+ * `rng` is injectable so a test can pin the draw; the game leaves it at
+ * Math.random.
  */
-export function spawnSpec(game, variant = 'default') {
+export function spawnSpec(game, variant = 'default', rng = Math.random) {
   const g = gameCfg(game);
+  if (variant === 'random' && g.spawnRandom) return randomSpawn(game, g, rng);
   const src = variant === 'training' ? g.spawnTraining : g.spawn;
   const out = {};
   for (const seat of g.seats) {
@@ -985,6 +1022,32 @@ export function spawnSpec(game, variant = 'default') {
     };
   }
   return out;
+}
+
+/**
+ * One centrally symmetric opening. Seat A is drawn in its own half (negative
+ * x, facing +x, the way `spawnTraining` has it) and seat B is that same pose
+ * rotated pi about the field centre — which for this scenario's geometry,
+ * centred at the origin, is (x, y, yaw) -> (-x, -y, yaw + pi).
+ *
+ * Only the two seats of a two-seat symmetric game are placed, so the seat order
+ * in `g.seats` decides which one takes the negative half: A first, as the
+ * nominal does.
+ */
+function randomSpawn(game, g, rng) {
+  const r = g.spawnRandom;
+  const between = (lo, hi) => lo + (hi - lo) * rng();
+  const xAbs = between(r.xAbs[0], r.xAbs[1]);
+  const y = between(-r.y, r.y);
+  const yaw = between(-r.yaw, r.yaw);
+  const [a, b] = g.seats;
+  const pose = (x, yy, t) => ({
+    x, y: yy, yaw: t, z: JOINTS.spawnZ, jointPos: DEFAULT_JOINT_POS.slice(),
+  });
+  return {
+    [seatRobot(game, a)]: pose(-xAbs, y, yaw),
+    [seatRobot(game, b)]: pose(xAbs, -y, yaw + Math.PI),
+  };
 }
 
 /**

@@ -113,14 +113,16 @@ export const PHASE = Object.freeze({
  *                                    (`countdownMs`, `cmdSlewPerSec`, ...) are
  *                                    meant to be touched.
  * @param {Object}   [opts.actionPaths] `{ [seat]: path }` — the safety-filter seam.
- * @param {string}   [opts.spawnVariant] 'default' | 'training'
+ * @param {string}   [opts.spawnVariant] 'default' | 'training' | 'random'
+ * @param {function} [opts.rng]          the draw behind spawnVariant 'random'
  * @param {Object}   [opts.deps]      test injection: `{walkObs, gameObs, WalkAffine,
  *                                    IncrementIntegrator, judge}`.
  * @returns {{tick, state, reset, pause, resume, hud, dispose, seatOf, info}}
  */
 export function createMatch({
   sim, game, playerSeat, opponent = null, policies, input,
-  config = null, actionPaths = null, spawnVariant = 'default', deps = null,
+  config = null, actionPaths = null, spawnVariant = 'default', rng = Math.random,
+  deps = null,
 } = {}) {
   const g = gameCfg(game);
   const key = gameKey(g);
@@ -235,13 +237,18 @@ export function createMatch({
    * state. `sim.resetAll` ends in a `mj_forward`, so the first observation of
    * the episode is already the post-forward frame mjlab would hand the policy.
    *
-   * No jitter and no velocity kick. Training resets add both (touchdown.py:239,
-   * recon/05:239) because they are a curriculum; a match wants a repeatable
-   * opening, which is also what the demo renders use (a LOCKED spawn file,
-   * recon/02:317).
+   * No velocity kick. Training resets add one (touchdown.py:239, recon/05:239)
+   * because it is a curriculum.
+   *
+   * The opening itself depends on `spawnVariant`. 'default' is the fixed one --
+   * for sym the LOCKED demo spawn file (recon/02:317), so a web match is
+   * comparable to the clips, and it is what every harness here runs. The
+   * shipped symmetric match uses 'random' instead: a fixed opening makes every
+   * round the same round, so each episode draws a pose in A's half and mirrors
+   * it through the centre for B (config.js `spawnRandom`).
    */
   function reset() {
-    sim.resetAll(spawnSpec(g, spawnVariant));
+    sim.resetAll(spawnSpec(g, spawnVariant, rng));
     stepCount = 0;
     verdict = null;
     countdownLeftMs = Math.max(0, cfg.countdownMs);

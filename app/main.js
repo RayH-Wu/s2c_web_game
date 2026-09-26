@@ -129,6 +129,9 @@ async function startSession(setup) {
       policies: { walk, ai },
       input: ui.input,
       actionPaths,
+      // Symmetric rounds draw their opening (config.js `spawnRandom`); the
+      // asymmetric game keeps its single fixed one.
+      spawnVariant: game === 'sym' ? 'random' : 'default',
     });
     const playerRobot = match.info?.playerRobot ?? match.state().playerRobot;
 
