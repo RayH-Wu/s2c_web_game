@@ -407,12 +407,13 @@ export const GAMES = deepFreeze({
      * `xAbs` is the distance from the centre line, so A draws at -xAbs and B at
      * +xAbs. The band sits between the training nominal (1.4) and the locked
      * demo opening (2.14), and stays clear of the 2.8 wall; `y` and `yaw` are
-     * half-widths. `y` runs nearly the full half-width of the pitch (the wall
-     * is at 1.5, the body's own half-width is 0.15) so the two can open on
-     * opposite touchlines, 2.2 m apart across the field, and the approach is a
-     * different one every round.
+     * half-widths. `y` is deliberately small: because the draw is mirrored, the
+     * two open 2*y apart across a pitch only 3.0 m wide, so a half-width near
+     * the touchline (1.1 was tried) puts one dog on each side and the round
+     * stops looking like a contest. At 0.5 they open at most 1.0 m apart
+     * laterally, which varies the approach without splitting the field.
      */
-    spawnRandom: { xAbs: [1.2, 2.3], y: 1.1, yaw: 0.25 },
+    spawnRandom: { xAbs: [1.2, 2.3], y: 0.5, yaw: 0.25 },
 
     /**
      * The human's speed limit IN THIS GAME ONLY (app/input.js setLimits).
