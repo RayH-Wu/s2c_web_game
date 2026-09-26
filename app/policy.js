@@ -86,7 +86,10 @@ async function fetchRetry(url, tries = 4) {
   let last;
   for (let i = 0; i < tries; i++) {
     try {
-      const res = await fetch(url);
+      // Revalidate: Pages caches for ten minutes and a stale manifest or a
+      // stale .bin silently plays the previous checkpoint (index.html says
+      // the same about the bundle).
+      const res = await fetch(url, { cache: 'no-cache' });
       if (res.ok) return res;
       last = new Error(`fetch ${url} -> HTTP ${res.status}`);
       if (res.status < 500 && res.status !== 429) throw last;
