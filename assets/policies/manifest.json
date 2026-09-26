@@ -1,7 +1,7 @@
 {
  "schema": 2,
  "exporter": "tools/export_policy.py",
- "authority": "tools/export_policy.py; checkpoint provenance stays local (.cache/manifest.provenance.json)",
+ "authority": "DESIGN.md section 3 (asset list); recon/01 asym, recon/02 sym",
  "complete": true,
  "norm_placement": "json (norm.mean / norm.std / norm.eps), not folded",
  "activation": "elu (alpha 1.0) between layers; the head is linear",
@@ -366,6 +366,7 @@
   "exporter": "tools/export_filter.py",
   "display": "S2C safety certificate (Q-CBF)",
   "filter_nets_md5": "96fcae4443cc1e51f421a608ea1780b5",
+  "authority": "recon/03_safety_filter.md; src/tasks/game/mdp/game_qcbf_action.py, src/tasks/game/mdp/filtered_action.py",
   "nets": {
    "ctrl": {
     "json": "filter_ctrl.json",

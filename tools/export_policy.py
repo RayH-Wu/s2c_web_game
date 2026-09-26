@@ -214,23 +214,24 @@ POLICIES: list[dict] = [
     dict(
         name="sym_s2c_B",
         corroborate=None,
-        expect_bytes=9557387,
+        expect_bytes=9555531,
         role="ai_opponent",
         game="sym",
         seat="B",
         method="s2c",
         display=DISPLAY["s2c"],
-        # Pool member F_v11s31g2500A. S2C / Shield. Chosen in tests/head_on.mjs on the two things that decide whether it is fun to play against. (1) It gets ROUND a dog that plants itself in the way: 7 of 8 blocked episodes still end in its touchdown, where F_v5g3500B stalls into a draw twice and F_v8g1800A concedes two collisions. (2) It does not fall: 0 of 16 head-on approaches at 1.4 m/s, worst tilt 34 deg. And it stays hard -- the player takes only 38% of the lines off it, against 63-75% off every baseline.
-        source=CACHE / "F_v11s31g2500A.pt",
-        upstream="/home/ray/Go2/Project/unitree_rl_mjlab/logs/rsl_rl/game_sym_touchdown_go2_go2_wbc/2026-08-24_11-52-57_sym_v11_s31/game_2500.pt",
-        upstream_md5="93e7dd8c3a873dee0dc43dd2741dedf5",
+        # Pool member F_v7g2000A. S2C / Shield. THE GATE IS `--park 1`: the player stands still and the AI has an empty field, so a member that cannot walk to its own line unopposed is disqualified before anything else is looked at. Twelve halves were screened; four pass. F_v7g2000A scores 16 of 16 standing episodes, worst tilt 16.6 deg, and falls in none of them. Of the four it leaves the best game: the player takes 31% of the head-on lines at 1.4 m/s (against 63-75% off every baseline), it never falls there either, and when a person plants themselves in its way it is still travelling 1.16 m/s at the end of the episode instead of freezing.
+        # What it replaces, and why no other axis may outrank the gate: F_v11s31g2500A won on the blocked test (7 of 8 go-arounds) and was shipped on it -- but standing alone it topples in 3 of 8, wanders out of bounds in another, and scores in none. F_v8g1800A is the same failure, 3 of 8. F_v13s43g4900A runs out of bounds 7 of 8. A head-on battery hides all of this, because the player arriving is what keeps the policy upright.
+        source=CACHE / "F_v7g2000A.pt",
+        upstream="/home/ray/Go2/Project/unitree_rl_mjlab/logs/rsl_rl/game_sym_touchdown_go2_go2_wbc/2026-08-21_03-35-40_sym_v7_s41/game_2000.pt",
+        upstream_md5="5e8a3ae437556732ce2896aa15bbfaa0",
         provenance="pulled from the 5080 into .cache/; md5 verified byte-identical",
         ckpt_seat="attacker",
         obs_dim=60,
         act_dim=12,
         native_half="A",
         action_path="increment_integrator",
-        notes="F_v11s31g2500A, the A half; seated at B, pi-rotation baked in.",
+        notes="F_v7g2000A, the A half; seated at B, pi-rotation baked in.",
     ),
     dict(
         name="sym_et_B",
