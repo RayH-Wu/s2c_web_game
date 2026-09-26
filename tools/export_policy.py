@@ -214,23 +214,24 @@ POLICIES: list[dict] = [
     dict(
         name="sym_s2c_B",
         corroborate=None,
-        expect_bytes=9557387,
+        expect_bytes=9549165,
         role="ai_opponent",
         game="sym",
         seat="B",
         method="s2c",
         display=DISPLAY["s2c"],
-        # Pool member F_v11s31g2500A -- the symmetric pool's strongest S2C, and the member /home/ray/demo_sym renders every 5x5 symmetric matchup with. Ray, 2026-09-26: put the strongest symmetric checkpoint back and run it behind the stage-1 fallback controller, which is what the demo drives it with (collision_v5prox_15k_s1ctrl_62d_game, 6 references across demo_sym's scripts). app/filter.js now picks `ctrl_s1` for the symmetric game.
-        source=CACHE / "F_v11s31g2500A.pt",
-        upstream="/home/ray/Go2/Project/unitree_rl_mjlab/logs/rsl_rl/game_sym_touchdown_go2_go2_wbc/2026-08-24_11-52-57_sym_v11_s31/game_2500.pt",
-        upstream_md5="93e7dd8c3a873dee0dc43dd2741dedf5",
+        # sym_v3_s23 game_700, the A half. Chosen on how it MOVES, which is the only thing a person watching can judge: 1.18 m/s crossing an empty field (1.27 over the last two seconds) and a worst trunk tilt of 5.9 deg standing, 7.3 deg with the player closing at 1.7 m/s -- a third of what any other candidate leans over -- with no fall in 16 episodes. It is also the hardest of the four finalists to score on, conceding 50% of the sprinted lines.
+        # Why an early snapshot. 53 symmetric S2C checkpoints were screened on an empty field with the player standing still, and the family DEGRADES with training: run v3 reads 0.64 m/s at g100, peaks at 1.23 m/s by g700, then falls away to 0.57 at g2300 and 0.53 at g5000, where it also topples in 3 of 4 episodes; worst tilt climbs from 6 deg to 73 deg over the same span. Every member the pool table and /home/ray/demo_sym's leaderboard nominate (F_v11s31g2500A, S_v2s17g5600A/5700A) sits past that decay -- they win the game on those tables, and they wade. Selection here is on locomotion, not on the pool.
+        source=CACHE / "S_v3s23g700A.pt",
+        upstream="/home/ray/Go2/Project/unitree_rl_mjlab/logs/rsl_rl/game_sym_touchdown_go2_go2_wbc/2026-08-20_04-22-59_sym_v3_s23/game_700.pt",
+        upstream_md5="0f1366e245305e171eb7dcca586e911f",
         provenance="pulled from the 5080 into .cache/; md5 verified byte-identical",
         ckpt_seat="attacker",
         obs_dim=60,
         act_dim=12,
         native_half="A",
         action_path="increment_integrator",
-        notes="F_v11s31g2500A, the A half; seated at B, pi-rotation baked in.",
+        notes="sym_v3_s23 game_700, the A half; seated at B, pi-rotation baked in.",
     ),
     dict(
         name="sym_et_B",
