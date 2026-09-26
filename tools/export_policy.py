@@ -214,24 +214,23 @@ POLICIES: list[dict] = [
     dict(
         name="sym_s2c_B",
         corroborate=None,
-        expect_bytes=9560075,
+        expect_bytes=9557387,
         role="ai_opponent",
         game="sym",
         seat="B",
         method="s2c",
         display=DISPLAY["s2c"],
-        # v133fdrw game_6000 -- the SAME S2C policy the asymmetric game and the ICRA demo clips run, seated at B with the pi-rotation baked. It is here because no symmetric S2C member can walk: 33 snapshots were screened on an empty field with the player standing still (`node tests/head_on.mjs --game sym --file <c> --park 1`), and the whole family tops out at 1.13 m/s, against 1.41 for ET, 1.57 for Lagrangian and 1.38 for this one. The demo's own favourites are no better and are worse under pressure -- S_v2s17g5600A falls in 6 of 8 episodes when the player closes at 1.7 m/s, S_v2s17g5700A in 4. This policy: 1.38 m/s cruising (1.58 m/s over the last two seconds), 0 falls in 8 standing episodes and 0 in 8 sprinted ones, worst tilt 13.5 deg, and it still leaves the player half the lines.
-        # Ruled out as the cause of the family's crawl, each measured rather than argued: the certificate (V stays at +0.05 the whole way and 99% of steps are task_pass, and shield off reproduces the run step for step), the fallback controller (native vs the demo's stage-1 ctrl_s1: same speed), the PD gain blend (on vs off: same speed), the field rectangle (5.6 x 3.0 at the origin, as sym_preset passes it), the integrator (scale 0.5, smoothing 0.3, inverse denominator 0.3*0.5, all read off the bundle) and the 60-D layout (term for term against sym_game/game_env_cfg.py:332-402, cmd = zero_twist as SymOutcomePBRS asserts). What is left is the policies.
-        source=CACHE / "asym_v133fdrw_game_6000.pt",
-        upstream="/home/ray/Go2/Project/unitree_rl_mjlab/logs/rsl_rl/game_touchdown_go2_go2_wbc/2026-08-17_22-23-27_v133fdrw/game_6000.pt",
-        upstream_md5="d8f3672494f744bf316a9d2e0f2a2c30",
+        # Pool member F_v11s31g2500A -- the symmetric pool's strongest S2C, and the member /home/ray/demo_sym renders every 5x5 symmetric matchup with. Ray, 2026-09-26: put the strongest symmetric checkpoint back and run it behind the stage-1 fallback controller, which is what the demo drives it with (collision_v5prox_15k_s1ctrl_62d_game, 6 references across demo_sym's scripts). app/filter.js now picks `ctrl_s1` for the symmetric game.
+        source=CACHE / "F_v11s31g2500A.pt",
+        upstream="/home/ray/Go2/Project/unitree_rl_mjlab/logs/rsl_rl/game_sym_touchdown_go2_go2_wbc/2026-08-24_11-52-57_sym_v11_s31/game_2500.pt",
+        upstream_md5="93e7dd8c3a873dee0dc43dd2741dedf5",
         provenance="pulled from the 5080 into .cache/; md5 verified byte-identical",
         ckpt_seat="attacker",
         obs_dim=60,
         act_dim=12,
         native_half="A",
         action_path="increment_integrator",
-        notes="v133fdrw game_6000, the asymmetric S2C attacker; seated at B, pi-rotation baked in.",
+        notes="F_v11s31g2500A, the A half; seated at B, pi-rotation baked in.",
     ),
     dict(
         name="sym_et_B",

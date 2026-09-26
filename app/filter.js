@@ -1197,14 +1197,18 @@ export async function loadFilter(opts = {}) {
   // at `collision_v5prox_15k_62d_game`, the bundle the asymmetric arm uses, and
   // the pool every member was chosen on left `bundle` unset, i.e. that default.
   //
-  // The stage-1 variant of the SAME certificate exists (recon/02:342-348 —
-  // tools/export_filter_s1ctrl.py proves only `ctrl` differs) and it was tried
-  // here. It DEADLOCKS: its fallback is a stand-still controller, so once the
-  // value goes negative the handover is total, the dog stops, the state never
-  // changes and the value never recovers. Measured with a human parked 0.65 m
-  // in front of it: stage-1 froze for 300 steps, the shipped ctrl worked around
-  // and scored. `ctrlNet` stays as a diagnostic override for that comparison.
-  const ctrlKey = opts.ctrlNet && entry.nets[opts.ctrlNet] ? opts.ctrlNet : 'ctrl';
+  // The stage-1 variant of the SAME certificate (recon/02:342-348 —
+  // tools/export_filter_s1ctrl.py proves only `ctrl` differs) is what the
+  // SYMMETRIC game runs behind: /home/ray/demo_sym drives every symmetric
+  // render with `collision_v5prox_15k_s1ctrl_62d_game`, 6 references across its
+  // scripts, so it is the pairing the symmetric members were watched under. Its
+  // fallback is a stand-still controller, which is the point — it is the
+  // steadier of the two — and the cost is that a total handover holds position
+  // rather than working around. The asymmetric game keeps `ctrl`; `ctrlNet`
+  // overrides either way.
+  const ctrlKey = opts.ctrlNet && entry.nets[opts.ctrlNet]
+    ? opts.ctrlNet
+    : (opts.game === 'sym' && entry.nets.ctrl_s1 ? 'ctrl_s1' : 'ctrl');
   const [ctrl, dstb, q1, q2] = await Promise.all(
     [ctrlKey, 'dstb', 'q1', 'q2'].map((k) => loadPolicy(dir + entry.nets[k].json)),
   );
