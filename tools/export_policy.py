@@ -214,24 +214,24 @@ POLICIES: list[dict] = [
     dict(
         name="sym_s2c_B",
         corroborate=None,
-        expect_bytes=9555531,
+        expect_bytes=9560075,
         role="ai_opponent",
         game="sym",
         seat="B",
         method="s2c",
         display=DISPLAY["s2c"],
-        # Pool member F_v7g2000A. S2C / Shield. THE GATE IS `--park 1`: the player stands still and the AI has an empty field, so a member that cannot walk to its own line unopposed is disqualified before anything else is looked at. Twelve halves were screened; four pass. F_v7g2000A scores 16 of 16 standing episodes, worst tilt 16.6 deg, and falls in none of them. Of the four it leaves the best game: the player takes 31% of the head-on lines at 1.4 m/s (against 63-75% off every baseline), it never falls there either, and when a person plants themselves in its way it is still travelling 1.16 m/s at the end of the episode instead of freezing.
-        # What it replaces, and why no other axis may outrank the gate: F_v11s31g2500A won on the blocked test (7 of 8 go-arounds) and was shipped on it -- but standing alone it topples in 3 of 8, wanders out of bounds in another, and scores in none. F_v8g1800A is the same failure, 3 of 8. F_v13s43g4900A runs out of bounds 7 of 8. A head-on battery hides all of this, because the player arriving is what keeps the policy upright.
-        source=CACHE / "F_v7g2000A.pt",
-        upstream="/home/ray/Go2/Project/unitree_rl_mjlab/logs/rsl_rl/game_sym_touchdown_go2_go2_wbc/2026-08-21_03-35-40_sym_v7_s41/game_2000.pt",
-        upstream_md5="5e8a3ae437556732ce2896aa15bbfaa0",
+        # v133fdrw game_6000 -- the SAME S2C policy the asymmetric game and the ICRA demo clips run, seated at B with the pi-rotation baked. It is here because no symmetric S2C member can walk: 33 snapshots were screened on an empty field with the player standing still (`node tests/head_on.mjs --game sym --file <c> --park 1`), and the whole family tops out at 1.13 m/s, against 1.41 for ET, 1.57 for Lagrangian and 1.38 for this one. The demo's own favourites are no better and are worse under pressure -- S_v2s17g5600A falls in 6 of 8 episodes when the player closes at 1.7 m/s, S_v2s17g5700A in 4. This policy: 1.38 m/s cruising (1.58 m/s over the last two seconds), 0 falls in 8 standing episodes and 0 in 8 sprinted ones, worst tilt 13.5 deg, and it still leaves the player half the lines.
+        # Ruled out as the cause of the family's crawl, each measured rather than argued: the certificate (V stays at +0.05 the whole way and 99% of steps are task_pass, and shield off reproduces the run step for step), the fallback controller (native vs the demo's stage-1 ctrl_s1: same speed), the PD gain blend (on vs off: same speed), the field rectangle (5.6 x 3.0 at the origin, as sym_preset passes it), the integrator (scale 0.5, smoothing 0.3, inverse denominator 0.3*0.5, all read off the bundle) and the 60-D layout (term for term against sym_game/game_env_cfg.py:332-402, cmd = zero_twist as SymOutcomePBRS asserts). What is left is the policies.
+        source=CACHE / "asym_v133fdrw_game_6000.pt",
+        upstream="/home/ray/Go2/Project/unitree_rl_mjlab/logs/rsl_rl/game_touchdown_go2_go2_wbc/2026-08-17_22-23-27_v133fdrw/game_6000.pt",
+        upstream_md5="d8f3672494f744bf316a9d2e0f2a2c30",
         provenance="pulled from the 5080 into .cache/; md5 verified byte-identical",
         ckpt_seat="attacker",
         obs_dim=60,
         act_dim=12,
         native_half="A",
         action_path="increment_integrator",
-        notes="F_v7g2000A, the A half; seated at B, pi-rotation baked in.",
+        notes="v133fdrw game_6000, the asymmetric S2C attacker; seated at B, pi-rotation baked in.",
     ),
     dict(
         name="sym_et_B",

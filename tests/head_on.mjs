@@ -42,6 +42,13 @@ const PARK = Number(flag('--park', '0'));
  * how far it still travels and whether it ever scores.
  */
 const BLOCK = argv.includes('--block');
+/**
+ * `--ctrl ctrl_s1` swaps in the stage-1 fallback controller. That is the bundle
+ * /home/ray/demo_sym drives every symmetric render with
+ * (collision_v5prox_15k_s1ctrl_62d_game, 6 references across its scripts), so
+ * it is what the videos show, and it has to be selectable to be compared.
+ */
+const CTRL = flag('--ctrl', '');
 
 let nSteps = () => 0;
 let readInput = () => ({ vx: 0, vy: 0, wz: 0 });
@@ -63,10 +70,15 @@ for (let k = 0; k < LINES; k++) {
     : await man.load(OPP);
   let actionPaths = null;
   if (SHIELD) {
-    const filter = await loadFilter({ manifest: man.manifest, game: GAME });
+    const filter = await loadFilter({ manifest: man.manifest, game: GAME, ctrlNet: CTRL });
     actionPaths = {
       [AI_SEAT]: makeShieldPath({
         filter, sim, robot: seatRobot(g, AI_SEAT), opponentRobot: seatRobot(g, PLAYER_SEAT),
+        // `--no-blend` pins the walk gains through an intervention, which is
+        // what game_qcbf_action.py:238 does at num_envs == 1. The default
+        // follows training (multi-env, blend on); the two are an A/B on
+        // whether the stiff brace is what makes a filtered policy wade.
+        gainBlend: !argv.includes('--no-blend'),
       }),
     };
   }
@@ -130,11 +142,12 @@ for (let k = 0; k < LINES; k++) {
   if (/(^|_)fell/.test(term)) falls += 1;
   if (deg > 45) over45 += 1;
   if (deg > worst) worst = deg;
-  if (BLOCK) {
-    // how much ground the AI covered over the whole episode, and at the end
-    lateTravel.push(travel);
-    lateSpeed.push(lastSpeeds.reduce((a, b) => a + b, 0) / Math.max(lastSpeeds.length, 1));
-  }
+  // How much ground the AI covered, and how fast it was going at the end. Worth
+  // printing on every mode, not just --block: "walks like it is wading" is a
+  // complaint about this number and nothing else reports it.
+  lateTravel.push(travel);
+  lateSpeed.push(lastSpeeds.reduce((a, b) => a + b, 0) / Math.max(lastSpeeds.length, 1));
+  lateTravel.steps = (lateTravel.steps || 0) + n;
   sim.dispose?.();
 }
 const pct = (x) => `${((100 * x) / LINES).toFixed(0)}%`;
@@ -143,9 +156,11 @@ console.log(
   `YOU win ${youWin}/${LINES} (${pct(youWin)})  draw ${draw}   ` +
   `AI fell ${falls}/${LINES} (${pct(falls)})   worst tilt ${worst.toFixed(1)} deg`);
 console.log(`  verdicts ${JSON.stringify(tally)}`);
-if (BLOCK) {
+{
   const m = (a) => a.reduce((x, y) => x + y, 0) / Math.max(a.length, 1);
-  console.log(`  blocked: AI covered ${m(lateTravel).toFixed(2)} m per episode, ` +
-    `moving ${m(lateSpeed).toFixed(2)} m/s at the end`);
+  const steps = lateTravel.steps / LINES;
+  console.log(`  AI covered ${m(lateTravel).toFixed(2)} m per episode over ${steps.toFixed(0)} steps ` +
+    `= ${(m(lateTravel) / (steps * 0.02)).toFixed(2)} m/s mean, ` +
+    `${m(lateSpeed).toFixed(2)} m/s at the end`);
 }
 if (SHIELD) console.log(`  decisions ${JSON.stringify(dec)}`);
