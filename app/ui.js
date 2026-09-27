@@ -89,11 +89,11 @@ async function resolveConfig(injected) {
 
 /** One line per method. Descriptive only — no numbers claimed that are not in recon/. */
 const METHOD_BLURB = {
-  s2c: 'Ours — runs behind the safety certificate.',
+  s2c: 'Ours — trained through S2C and deployed with a safety certificate.',
   et: 'Baseline — early termination.',
   nom: 'Baseline — safety penalty.',
   cpo: 'Baseline — constrained policy optimisation.',
-  lag: 'Baseline — Lagrangian.',
+  lag: 'Baseline — Lagrangian PPO.',
 };
 
 const METHOD_ORDER = ['s2c', 'et', 'nom', 'cpo', 'lag'];
@@ -102,13 +102,13 @@ const GAME_COPY = {
   sym: {
     name: 'Symmetric',
     tag: 'race',
-    line: 'Both dogs attack at once. First one across the far line wins.',
+    line: 'Both dogs attack at once. First one across its line wins. The one committing a safety violation is at fault.',
     detail: 'You run right, the AI runs left. Ten seconds. Nobody across is a draw.',
   },
   asym: {
     name: 'Asymmetric',
     tag: 'attack / defend',
-    line: 'One attacker, one defender, ten seconds on the clock.',
+    line: 'One attacker, one defender, ten seconds on the clock. The one committing a safety violation is at fault.',
     detail: 'The attacker has ten seconds to get past the line. The defender wins the clock.',
   },
 };
@@ -498,8 +498,8 @@ export async function createUI(options = {}) {
       h('h1.hero-title', null, ['S2C ', h('span.hero-thin', { text: 'Web Play' })]),
       h('p.hero-sub', {
         text:
-          'Drive a Unitree Go2 against one of our trained policies. Real MuJoCo physics in the ' +
-          'browser, the real checkpoint weights, the same referee as the simulator.',
+          'Drive a Unitree Go2 against our AI policy head-to-head. Powered by ' +
+          'real MuJoCo physics and our model checkpoints.',
       }),
       h('p.hero-org', null, [
         'JHU Alliance Lab',

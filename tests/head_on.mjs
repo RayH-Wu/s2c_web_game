@@ -62,7 +62,7 @@ const man = await loadManifest(`${ROOT}/assets/policies/manifest.json`);
 const walk = await man.load(man.playerWalk().name);
 
 let falls = 0, over45 = 0, worst = 0, youWin = 0, draw = 0;
-const tally = {}, dec = {}; const lateTravel = [], lateSpeed = [];
+const tally = {}, dec = {}; const lateTravel = [], lateSpeed = [], peakSpeed = [];
 for (let k = 0; k < LINES; k++) {
   const sim = await createSim({ sceneUrl: `${ROOT}/assets/scene/${GAME}/scene.xml` });
   const ai = FILE
@@ -93,6 +93,10 @@ for (let k = 0; k < LINES; k++) {
   match.reset();
   let hud = match.hud(), n = 0, tilt = 0, travel = 0;
   let prevP = null; const lastSpeeds = [];
+  // A 25-step (0.5 s) box filter over the AI's ground speed. The mean over the
+  // episode starts from a standstill and the run-up is only ~4.3 m, so it
+  // understates the gait; this is the fastest the policy ever actually moved.
+  const win = []; let peak = 0;
   nSteps = () => n;
   const meRob = seatRobot(g, PLAYER_SEAT), aiRob = seatRobot(g, AI_SEAT);
   const aiGoal = goalDir(GAME, AI_SEAT) || -1;
@@ -129,6 +133,12 @@ for (let k = 0; k < LINES; k++) {
         travel += d;
         lastSpeeds.push(d / 0.02);
         if (lastSpeeds.length > 100) lastSpeeds.shift();
+        win.push(d / 0.02);
+        if (win.length > 25) win.shift();
+        if (win.length === 25) {
+          const m = win.reduce((a, b) => a + b, 0) / 25;
+          if (m > peak) peak = m;
+        }
       }
       prevP = [p[0], p[1]];
     }
@@ -148,6 +158,7 @@ for (let k = 0; k < LINES; k++) {
   lateTravel.push(travel);
   lateSpeed.push(lastSpeeds.reduce((a, b) => a + b, 0) / Math.max(lastSpeeds.length, 1));
   lateTravel.steps = (lateTravel.steps || 0) + n;
+  peakSpeed.push(peak);
   sim.dispose?.();
 }
 const pct = (x) => `${((100 * x) / LINES).toFixed(0)}%`;
@@ -161,6 +172,8 @@ console.log(`  verdicts ${JSON.stringify(tally)}`);
   const steps = lateTravel.steps / LINES;
   console.log(`  AI covered ${m(lateTravel).toFixed(2)} m per episode over ${steps.toFixed(0)} steps ` +
     `= ${(m(lateTravel) / (steps * 0.02)).toFixed(2)} m/s mean, ` +
-    `${m(lateSpeed).toFixed(2)} m/s at the end`);
+    `${m(lateSpeed).toFixed(2)} m/s at the end, ` +
+    `PEAK ${m(peakSpeed).toFixed(2)} m/s (best half-second, mean over episodes; ` +
+    `fastest single ${Math.max(...peakSpeed).toFixed(2)})`);
 }
 if (SHIELD) console.log(`  decisions ${JSON.stringify(dec)}`);
