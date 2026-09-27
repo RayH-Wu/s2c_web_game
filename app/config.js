@@ -429,22 +429,9 @@ export const GAMES = deepFreeze({
      * through a head-on charge and read S2C at 1.12 — that is the speed of a
      * policy working around a dog in its path, not its pace.)
      *
-     * The cap is set by the game it produces, measured with tests/head_on.mjs
-     * (eight head-on approach lines per opponent, counting who wins and what
-     * happens to the AI). At 1.6 m/s, against the shipped roster:
-     *
-     *   S2C   you win 50%, AI falls 0/8, worst tilt 28 deg
-     *   CPO   you win 75%, AI falls 1/8
-     *   Lag   you win 63%, AI falls 1/8
-     *   Nom   you win 63%, AI falls 0/8, every win a clean touchdown
-     *   ET    you win 25%, AI falls 2/8   (the hard one; see sym_et_B)
-     *
-     * Slower than that and the baselines stop being beatable (at 1.4 CPO drops
-     * to 38%); faster and everyone starts toppling (at 1.8 Lagrangian falls in
-     * 5 of 8, and a win you get by watching the other dog fall over is not a
-     * win anyone enjoys). So W gives 1.5 m/s and Shift 1.8 m/s: the sprint is
-     * there to force a line, and it costs you — sprinting into contact makes
-     * you the faster closer, which is the collision the referee charges to you.
+     * W gives 1.0 m/s and Shift 1.35 m/s (Ray, 2026-09-26). The sprint is there
+     * to force a line, and it costs you — sprinting into contact makes you the
+     * faster closer, which is the collision the referee charges to you.
      *
      * For scale, the training league's own walking opponent ran at
      * `frozen_walk_speed_range = (0.45, 0.65)` m/s (it is in the checkpoint),
@@ -455,7 +442,7 @@ export const GAMES = deepFreeze({
      * The asymmetric game keeps the full box: there the roles are not
      * symmetric, the attacker has a clock, and speed is the attacker's job.
      */
-    playerCmd: { vx: [-1.0, 1.7], vy: [-0.8, 0.8], wz: [-2.0, 2.0], cruiseFrac: 0.824 },
+    playerCmd: { vx: [-1.0, 1.35], vy: [-0.8, 0.8], wz: [-2.0, 2.0], cruiseFrac: 0.74074 },
 
     // --- rules --------------------------------------------------------------
     /** The live TerminationManager vocabulary. scene.json rules.terminationTerms */
